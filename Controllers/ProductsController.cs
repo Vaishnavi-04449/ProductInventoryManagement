@@ -1,10 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ProductInventoryAPI.Data;
 using ProductInventoryAPI.Models;
 namespace ProductInventoryAPI.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/[controller]")]     //handles API requests(get,post,put,delete)
     [ApiController]
     public class ProductsController:ControllerBase
     {
@@ -29,15 +29,18 @@ namespace ProductInventoryAPI.Controllers
             return product;
         }
         [HttpPost]
-        public async Task<ActionResult<Product>> AddProduct(Product product)
+        public async Task<IActionResult> AddProducts(List<Product> products)
         {
-            if (product.Price <= 0)
-                return BadRequest("Price should be greater than 0");
+            foreach (var product in products)
+            {
+                if (product.Price <= 0)
+                    return BadRequest("Price should be greater than 0");
+            }
 
-            _db.Products.Add(product);
+            await _db.Products.AddRangeAsync(products);
             await _db.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(GetProductById), new { id = product.Id }, product);
+            return Ok(products);
         }
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateProduct(int id, Product product)
